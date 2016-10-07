@@ -23,9 +23,11 @@ function Pipe(position, image = new Image(), imageSource="") {
   else if (imageSource){
     this.spritesheet.src = encodeURI(image);
   }
-  
+
   this.timer = 0;
   this.frame = 0;
+  this.source = position.source;
+  this.sink = position.sink;
   this.canRotate = true;
   this.CurvedPipe = false;
   this.startPipe = false;
