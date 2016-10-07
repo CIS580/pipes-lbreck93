@@ -28,9 +28,14 @@ function Pipe(position, image = new Image(), imageSource="") {
   this.frame = 0;
   this.source = position.source;
   this.sink = position.sink;
-  this.canRotate = true;
-  this.CurvedPipe = false;
-  this.startPipe = false;
+  if (this.source || this.sink){
+    this.canRotate = false;
+  }
+  else{
+    this.canRotate = true;
+  }
+  
+  this.isCurved = false;
   this.fourWayPipe = false;
 }
 

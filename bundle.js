@@ -13,12 +13,17 @@ var image = new Image();
 image.src = 'assets/pipes.png';
 var horizontalImage = new Image();
 horizontalImage.src = 'assets/pipes-straight.png';
+var curvedImage = new Image();
+curvedImage.src = 'assets/pipes-curved.png';
+var quadImage = new Image();
+quadImage.src = 'assets/pipes-quadradirecional.png';
 buildClickableGrid(canvas);
 
 var clickX, clickY; //where the user clicked
 var pipes = []; //array of pipes
 var score = 0;
 var level = 0;
+var nextPipeGame = new Pipe(image=horizontalImage);
 
 var backgroundMusic = new Audio('assets/audio/background_music.mp3');
 var placePipe = new Audio('assets/audio/placePipe.wav');
@@ -33,7 +38,6 @@ pipes.push(new Pipe({x: 9*80+3, y: 0*80+3, sink: true}, horizontalImage));
 canvas.onclick = function(event) {
   event.preventDefault();
   // TODO: Place or rotate pipe tile
-  console.log(event);
   clickX = event.offsetX;
   clickY = event.offsetY;
   var x = Math.floor((clickX + 3) / 80);
@@ -52,9 +56,56 @@ canvas.onclick = function(event) {
   if (valid){
     placePipe.play();
     pipes.push(new Pipe({x: tempX, y: tempY}, horizontalImage));
+
+    var randomPipe = Math.round(Math.random() * (9 - 1) + 1);
+    console.log('new pipe: ' + randomPipe);
+    switch(randomPipe){
+      case randomPipe <= 3:
+        nextPipeGame = new Pipe(image=horizontalImage);
+        break;
+      case randomPipe <= 6:
+        nextPipeGame = new Pipe(image=curvedImage);
+        break;
+      case randomPipe <=9:
+        nextPipeGame = new Pipe(image=quadImage);
+        break;
+
+    }
+
+
   }
 
 }//end canvas.onclick
+
+//rotate pipes on right click
+canvas.oncontextmenu = function(event)
+{
+  event.preventDefault();
+
+  //find the pipe selected
+  clickX = event.offsetX;
+  clickY = event.offsetY;
+  var x = Math.floor((clickX + 3) / 80);
+  var y = Math.floor((clickY + 3) / 80);
+  var rotatedPipeX = x * 80 + 3;
+  var rotatedPipeY = y * 80 + 3;
+
+  //search through the pipes to find it in the array
+  pipes.forEach(function(p){
+    if(p.x == rotatedPipeX && rotatedPipeY == p.y && p.canRotate)
+    {
+      if(p.frame == p.maxFrame)
+      {
+        rotatePipe.play();
+        p.frame = 0;
+      }
+      else
+      {
+        rotatePipe.play();
+      }
+    }
+  });
+}
 
 /**
  * @function masterLoop
@@ -77,7 +128,7 @@ masterLoop(performance.now());
  * the number of milliseconds passed since the last frame.
  */
 function update(elapsedTime) {
-  nextPipe.src = horizontalImage.src;
+  nextPipe.src = nextPipeGame.spritesheet.src;
 
   //audio
   if(backgroundMusic.ended){
@@ -210,9 +261,14 @@ function Pipe(position, image = new Image(), imageSource="") {
   this.frame = 0;
   this.source = position.source;
   this.sink = position.sink;
-  this.canRotate = true;
-  this.CurvedPipe = false;
-  this.startPipe = false;
+  if (this.source || this.sink){
+    this.canRotate = false;
+  }
+  else{
+    this.canRotate = true;
+  }
+  
+  this.isCurved = false;
   this.fourWayPipe = false;
 }
 
