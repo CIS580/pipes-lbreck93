@@ -3,20 +3,42 @@
 
 /* Classes */
 const Game = require('./game');
+const Pipe = require('./pipe');
 
 /* Global variables */
 var canvas = document.getElementById('screen');
 var game = new Game(canvas, update, render);
 var image = new Image();
 image.src = 'assets/pipes.png';
+buildClickableGrid(canvas);
 
-// TODO: Place the pipe tiles on the board in random order
+var clickX, clickY;
+var pipes = []; //array of pipes
 
 canvas.onclick = function(event) {
   event.preventDefault();
-  // TODO: determine which pipe tile was clicked on
-  // TODO: rotate the pipes in the pipe tile
-}
+  // TODO: Place or rotate pipe tile
+  console.log(event);
+  clickX = event.offsetX;
+  clickY = event.offsetY;
+  var x = Math.floor((clickX + 3) / 80);
+  var y = Math.floor((clickY + 3) / 80);
+  var tempX = x*80+3
+  var tempY = y*80+3
+  var valid = true;
+
+  //is pipe is not laid on another pipe?
+  pipes.forEach(function(p){
+    if (valid && p.x == tempX && p.y == tempY){
+      valid = false;
+    }
+  });//end foreach
+
+  if (valid){
+    pipes.push(new Pipe({x: tempX, y: tempY}, image));
+  }
+  console.log(pipes);
+}//end canvas.onclick
 
 /**
  * @function masterLoop
@@ -51,14 +73,30 @@ function update(elapsedTime) {
   * @param {CanvasRenderingContext2D} ctx the context to render to
   */
 function render(elapsedTime, ctx) {
-  ctx.fillStyle = "#777777";
+  //background
+  ctx.fillStyle = "rgba(0, 0, 0, .87)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-
   // TODO: Render the board
-
+  //board sections
+  for (var y=0; y<7; y++){
+    for(var x=0; x<10; x++){
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(x*80+3, y*80+3, 70, 70);
+    }
+  }
+  //pipes
+  pipes.forEach(function(pipe){pipe.render(elapsedTime, ctx);});
 }
 
-},{"./game":2}],2:[function(require,module,exports){
+function buildClickableGrid(canvas){
+  //original has a width of 10, height of 7
+  var cH = canvas.height;
+  var cW = canvas.width;
+  var sideLength = 25;
+  var cells = [];
+}
+
+},{"./game":2,"./pipe":3}],2:[function(require,module,exports){
 "use strict";
 
 /**
@@ -115,5 +153,64 @@ Game.prototype.loop = function(newTime) {
   // Flip the back buffer
   this.frontCtx.drawImage(this.backBuffer, 0, 0);
 }
+
+},{}],3:[function(require,module,exports){
+"use strict";
+
+const MS_PER_FRAME = 1000/8;
+
+/**
+ * @module exports the Player class
+ */
+module.exports = exports = Pipe;
+
+/**
+ * @constructor Player
+ * Creates a new player object
+ * @param {Postition} position object specifying an x and y
+ */
+function Pipe(position, image = new Image(), imageSource="") {
+  this.x = position.x;
+  this.y = position.y;
+  this.width  = 64;
+  this.height = 64;
+  if (image){
+    this.spritesheet  = image;
+  }
+  else if (imageSource){
+    this.spritesheet.src = encodeURI(image);
+  }
+  
+  this.timer = 0;
+  this.frame = 0;
+  this.canRotate = true;
+  this.CurvedPipe = false;
+  this.startPipe = false;
+  this.fourWayPipe = false;
+}
+
+/**
+ * @function updates the player object
+ * {DOMHighResTimeStamp} time the elapsed time since the last frame
+ */
+Pipe.prototype.update = function(time) {
+
+}
+
+/**
+ * @function renders the player into the provided context
+ * {DOMHighResTimeStamp} time the elapsed time since the last frame
+ * {CanvasRenderingContext2D} ctx the context to render into
+ */
+Pipe.prototype.render = function(time, ctx) {
+      ctx.drawImage(
+        // image
+        this.spritesheet,
+        // source rectangle
+        this.frame * 64, 0, this.width, this.height,
+        // destination rectangle
+        this.x, this.y, this.width, this.height
+    );
+  }
 
 },{}]},{},[1]);
