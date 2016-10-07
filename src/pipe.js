@@ -54,6 +54,6 @@ Pipe.prototype.render = function(time, ctx) {
         // source rectangle
         this.frame * 64, 0, this.width, this.height,
         // destination rectangle
-        this.x, this.y, this.width, this.height
+        this.x, this.y+10, 140, 140
     );
   }

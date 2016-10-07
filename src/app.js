@@ -7,15 +7,26 @@ const Pipe = require('./pipe');
 /* Global variables */
 var canvas = document.getElementById('screen');
 var game = new Game(canvas, update, render);
+var nextPipe = document.getElementById('nextPipe')
 var image = new Image();
 image.src = 'assets/pipes.png';
+var horizontalImage = new Image();
+horizontalImage.src = 'assets/pipes-straight.png';
 buildClickableGrid(canvas);
 
-var clickX, clickY;
+var clickX, clickY; //where the user clicked
 var pipes = []; //array of pipes
+var score = 0;
+var level = 0;
 
-pipes.push(new Pipe({x: 0*80+3, y: 2*80+3, source: true}, image));
-pipes.push(new Pipe({x: 9*80+3, y: 0*80+3, sink: true}, image));
+var backgroundMusic = new Audio('assets/audio/background_music.mp3');
+var placePipe = new Audio('assets/audio/placePipe.wav');
+var rotatePipe = new Audio('assets/audio/rotatePipe.wav');
+var winning = new Audio('assets/audio/victory.wav');
+var loosing = new Audio('assets/audio/loss.wav');
+
+pipes.push(new Pipe({x: 0*80+3, y: 2*80+3, source: true}, horizontalImage));
+pipes.push(new Pipe({x: 9*80+3, y: 0*80+3, sink: true}, horizontalImage));
 
 
 canvas.onclick = function(event) {
@@ -38,9 +49,10 @@ canvas.onclick = function(event) {
   });//end foreach
 
   if (valid){
-    pipes.push(new Pipe({x: tempX, y: tempY}, image));
+    placePipe.play();
+    pipes.push(new Pipe({x: tempX, y: tempY}, horizontalImage));
   }
-  console.log(pipes);
+
 }//end canvas.onclick
 
 /**
@@ -64,6 +76,12 @@ masterLoop(performance.now());
  * the number of milliseconds passed since the last frame.
  */
 function update(elapsedTime) {
+  nextPipe.src = horizontalImage.src;
+
+  //audio
+  if(backgroundMusic.ended){
+    backgroundMusic.play();
+  }
 
   // TODO: Advance the fluid
 }
@@ -89,6 +107,9 @@ function render(elapsedTime, ctx) {
   }
   //pipes
   pipes.forEach(function(pipe){pipe.render(elapsedTime, ctx);});
+  ctx.fillStyle = "#fff";
+  ctx.fillText("Score: " + score, canvas.width - 80, canvas.height - 5);
+  ctx.fillText("Level: " + level, 10, canvas.height - 5);
 }
 
 function buildClickableGrid(canvas){
